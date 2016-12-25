@@ -1,0 +1,10 @@
+Host: www.globalspec.com
+User-Agent: msnbot/1.1 (+http://search.msn.com/msnbot.htm)
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Referer: http://www.globalspec.com/MyGlobalSpec/NewProfileSubs?gotourl=%2Fsearch%2Fproducts%3Fpage%3Dms%23sqid%3D19128895%26comp%3D2940%26show%3Dsuppliers&areaid=2940
+Cookie: s_fid=4F502BE322DF4CBB-1127B7F3306D2F72; s_nr=1480630857653; s_vnum=1483220729440%26vn%3D44; s_lv=1481689747555; CFID=Z3epk1hxi861r0je68dw9xjrpf2oqa1vm0ygobljizhhw2d5gjh-15140250; CFTOKEN=Z3epk1hxi861r0je68dw9xjrpf2oqa1vm0ygobljizhhw2d5gjh-32966169; NSC_mcwt_fohjoffsjoh360_qvcmjd_xfc=ffffffffaf1f1c1345525d5f4f58455e445a4a423660; s_cc=true; s_invisit=true; s_lv_s=Less%20than%207%20days; s_sq=%5B%5BB%5D%5D; GSUSER=%2D328144757%7CC%7C201612132327%7C201612132327%7Cregistered%7CF37BAD2D8F8F644BBC6B7943E6511877
+Connection: keep-alive
+Cache-Control: max-age=0

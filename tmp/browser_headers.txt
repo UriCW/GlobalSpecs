@@ -1,0 +1,8 @@
+Host: www.globalspec.com
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-GB,en-US;q=0.8,en;q=0.6
+Cookie: CFID=Z3epk1hxi861r0je68dw9xjrpf2oqa1vm0ygobljizhhw2d5gjh-10601792; CFTOKEN=Z3epk1hxi861r0je68dw9xjrpf2oqa1vm0ygobljizhhw2d5gjh-21686641; __gads=ID=2f57adaff9166e4b:T=1480499330:S=ALNI_MbnM-cMIEIp6r1-C6N2Va9UiUSIaA; __qca=P0-1816541187-1480499333134; s_nr=1480500210885; NOWELCOMEADPRD=1; s_vnum=1483091328511%26vn%3D24; GSUSER=%2D328144757%7CC%7C201612132327%7C201612241344%7Clogin%7CCD5C1BC9EC971D40B522AA3B80EF3205; __atuvc=5%7C51; __atuvs=585ec59da13654a6004; __utmt=1; NSC_mcwt_fohjoffsjoh360_qvcmjd_xfc=ffffffffaf1f1c1745525d5f4f58455e445a4a423660; s_cc=true; s_fid=05BB362D30CC0EE5-09EEE1D595F82A95; s_invisit=true; s_lv=1482607688811; s_lv_s=Less%20than%201%20day; s_sq=%5B%5BB%5D%5D; __utma=61315827.668576018.1480499333.1482597221.1482605062.23; __utmb=61315827.14.10.1482605062; __utmc=61315827; __utmz=61315827.1480499333.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __ar_v4=YIGSV3K6SVFH3LJLSYKCZ4%3A20161130%3A63%7COL65WVJNORCSJA2NTCY6KE%3A20161130%3A63%7CDEVCKIMFN5AW7G5DMKFKHK%3A20161130%3A63
