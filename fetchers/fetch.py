@@ -15,7 +15,7 @@ class Fetch():
             cookie_name=line.split("=")[0]
             cookie_value = line.split("=")[1]
             ret[cookie_name]=cookie_value
-        print(ret)
+        #print(ret)
         return ret
 
     def load_headers(self,fname):
@@ -36,7 +36,7 @@ class Fetch():
 
 
     def http_get(self,url):
-        print("Getting "+url);
+        #print("Getting "+url);
         ses=requests.Session()
         headers,cookies=self.load_headers("../tmp/browser_headers.txt")
 
@@ -279,7 +279,55 @@ if __name__=='__main__':
         json.dump(all_errors,f, sort_keys=True, indent=4)
     """
 
+    def traverse_catalogs(catalogs,products):
+        catalog_url_format = "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
+        for catalog in catalogs:
+            if catalog['harvested']==True: continue #Already harvested
+            #In case we are harvesting a record from category, we have urls with comp= instead of vid,cid,comp
 
+            #Load catalog:
+            catalog_content=Fetch().http_get(catalog_url_format.format(catalog['category_id']) )
+            cs = Catalogs().get_catalogs(catalog_content)
+            ps = Catalogs().get_products(catalog_content)
+            if len(cs) == 0: #No nested catalogs
+                print("catalog contains only products:"+str(catalog))
+                products.extend(ps)
+                catalog['harvested']=True
+                continue
+            for c in cs:#Check this catalog (c) isn't already in catalogs[]
+                vid=c['vid']
+                comp=c['comp']
+                cid=c['cat_id']
+
+
+
+                print(">vid: " + vid + ">comp: " + comp + ">cid: " + cid)
+                #existing_records = [entry for entry in catalogs]
+                try:
+                    existing_records=[entry for entry in catalogs if entry['vid'] == vid and entry['cat_id']==cid and entry['comp']==comp]
+                    if len(existing_records)==0:#This record isn't already in catalogs[], add
+                        pass
+                except KeyError as ke:
+                    print("Key Error, catalog is just a category item")
+                    print(catalog)
+                    print(ke)
+
+            print(cs)
+
+
+
+    #Rewrite of the above catalogs fetching
+    #Take initial list of catalogs and products (from categories)
+    #take all catalogs and traverse to find rest of catalogs
+    #Build a final exhastive list of catalogs and of products
+    initial_list_of_catalogs=None
+    with open("../output/industrial_categories.json","r") as f:
+        initial_list_of_catalogs=json.load(f)
+    print(initial_list_of_catalogs)
+    catalogs=[entry for entry in initial_list_of_catalogs if entry['product_page'] is None]
+    products=[entry for entry in initial_list_of_catalogs if entry['product_page'] is not None]
+    traverse_catalogs(catalogs,products)
+    print(catalogs)
 
 
 
