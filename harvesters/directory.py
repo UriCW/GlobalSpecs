@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup as bs
+import json
 """
 Extracts the relevant parts from an html or a json
 """
@@ -48,9 +49,9 @@ class Industrial:
         return ret
 
 class Catalogs: 
-    def get_products(self,json):
+    def get_products(self,json_contents):
         #Gets the products from a category page or another catalog page
-        html=json["RESULTS"] #The contents are in the json element, inside some html tags
+        html=json.loads(json_contents)["RESULTS"] #The contents are in the json element, inside some html tags
         soup = bs(html,"html.parser")
         ret=[]
         for a in soup.findAll("a",attrs={"class":"product-name"}):
@@ -66,9 +67,10 @@ class Catalogs:
                 ret.append(catalog_entry)
         return ret
 
-    def get_catalogs(self,json):
+    def get_catalogs(self,json_contents):
+
         #Gets the catalogs from a category page or another catalog page
-        html=json["RESULTS"] #The contents are in the json element, inside some html tags
+        html=json.loads(json_contents)["RESULTS"] #The contents are in the json element, inside some html tags
         soup = bs(html,"html.parser")
         ret=[]
         for a in soup.findAll("a",attrs={"class":"product-name"}):

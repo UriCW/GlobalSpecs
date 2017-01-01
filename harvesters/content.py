@@ -248,8 +248,15 @@ class HarvestProduct:
         title = soup.find("div",attrs={"id":"header-container"}).find("h1").getText().strip()
         content = soup.find("div",attrs={"id":"inner-content"})
         external=content.find("a",attrs={"class","external"})['href']
-        datasheet=content.find("div",attrs={"class","datasheet-button-container"}).find("a")["data-direct-link"]
-        product_image=content.find("img",attrs={"id":"product-image", "class":"post-load"})["realsrc"]
+
+        try:
+            datasheet=content.find("div",attrs={"class","datasheet-button-container"}).find("a")["data-direct-link"]
+        except:
+            datasheet='None'
+        try:
+            product_image=content.find("img",attrs={"id":"product-image", "class":"post-load"})["realsrc"]
+        except:
+            product_image='None'
         supplier = soup.find("div",attrs={"class":"supplier-name"}).getText().strip()
 
         return(
