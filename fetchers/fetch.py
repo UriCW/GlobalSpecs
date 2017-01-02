@@ -43,7 +43,7 @@ class Fetch():
         #ses.headers=headers
         #ses.cookies=cookies
         #print(ses.cookies)
-
+        print("getting: "+url)
         resp=ses.get(url,cookies=cookies,allow_redirects=True)
         #print(resp)
         #print(resp.text)
@@ -283,17 +283,29 @@ if __name__=='__main__':
         catalog_url_format = "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
         for catalog in catalogs:
             if catalog['harvested']==True: continue #Already harvested
-            #In case we are harvesting a record from category, we have urls with comp= instead of vid,cid,comp
 
-            #Load catalog:
-            catalog_content=Fetch().http_get(catalog_url_format.format(catalog['category_id']) )
+            # Load catalog:
+            catalog_content = Fetch().http_get(catalog_url_format.format(catalog['category_id']))
             cs = Catalogs().get_catalogs(catalog_content)
             ps = Catalogs().get_products(catalog_content)
-            if len(cs) == 0: #No nested catalogs
+
+            if len(cs) == 0: #No nested catalogs (only products)
                 print("catalog contains only products:"+str(catalog))
                 products.extend(ps)
                 catalog['harvested']=True
                 continue
+
+            #In case we are harvesting a record from category, we have urls with comp= instead of vid,cid,comp
+            if 'category_id' in catalog: #This is the initial categories
+                pass
+            else:#This is an entry with a vid,cid,comp
+                pass
+
+
+
+
+
+
             for c in cs:#Check this catalog (c) isn't already in catalogs[]
                 vid=c['vid']
                 comp=c['comp']
@@ -315,6 +327,25 @@ if __name__=='__main__':
             print(cs)
 
 
+    def fetch_initial_list_of_catalogs(categories):
+        """
+        Generates initial lists for catalogs and products from categories
+        :param categories:
+        :return:
+        """
+        inital_catalog_category_entries=[entry for entry in categories if entry['product_page']==None] #We only care about catalogs
+        ret_catalogs=[]
+        ret_products = []
+        for category_entry in inital_catalog_category_entries:
+            print(category_entry)
+
+            category_content=Fetch().http_get(category_entry['url'])
+            catalogs=Catalogs().get_catalogs(category_content)
+            products=Catalogs().get_products(category_content)
+            ret_catalogs.extend(catalogs)
+            ret_products.extend(products)
+        return ret_catalogs,ret_products
+
 
     #Rewrite of the above catalogs fetching
     #Take initial list of catalogs and products (from categories)
@@ -322,12 +353,26 @@ if __name__=='__main__':
     #Build a final exhastive list of catalogs and of products
     initial_list_of_catalogs=None
     with open("../output/industrial_categories.json","r") as f:
-        initial_list_of_catalogs=json.load(f)
+        category_enteries=json.load(f)
+    Categories().fix(category_enteries)
+    print("Category entries fixed:"+str(category_enteries) )
+
+    initial_list_of_catalogs,initial_list_of_products=fetch_initial_list_of_catalogs(category_enteries)
+
+    with open("../output/initial_list_of_catalogs.json","w+") as f:
+        json.dump(initial_list_of_catalogs,f, sort_keys=True, indent=4)
+    with open("../output/initial_list_of_products.json","w+") as f:
+        json.dump(initial_list_of_products,f, sort_keys=True, indent=4)
+
+
+
     print(initial_list_of_catalogs)
-    catalogs=[entry for entry in initial_list_of_catalogs if entry['product_page'] is None]
-    products=[entry for entry in initial_list_of_catalogs if entry['product_page'] is not None]
-    traverse_catalogs(catalogs,products)
-    print(catalogs)
+    print("Initial Catalogs:"+str(initial_list_of_catalogs) )
+    print("Initial Products:" + str(initial_list_of_products) )
+    #catalogs=[entry for entry in initial_list_of_catalogs if entry['product_page'] is None]
+    #products=[entry for entry in initial_list_of_catalogs if entry['product_page'] is not None]
+    #traverse_catalogs(catalogs,products)
+    #print(catalogs)
 
 
 

@@ -48,8 +48,32 @@ class Industrial:
           ret.append(entry)
         return ret
 
-class Catalogs: 
+class Catalogs:
+    def fix_url(self,catalog_and_product_list):
+        """
+        Fixes urls to be the full page url, (instead of uri)
+        product: http://www.globalspec.com/specsearch/partspecs?partId={partId}&comp={comp}&vid={vid}&sqid=0
+        catalog: http://www.globalspec.com/search/products?page=mi#sqid=0&comp={comp}&vid={vid}
+        :param catalog_and_product_list:
+        :return:
+        """
+        catalogs=[entry for entry in catalog_and_product_list if 'partId' not in entry]
+        products = [entry for entry in catalog_and_product_list if 'partId' in entry]
+        for catalog in catalogs:
+            catalog['url']="http://www.globalspec.com/search/products?page=mi#sqid=0&comp={0}&vid={0}".format(
+                catalog['comp'],
+                catalog['vid']
+            )
+        for product in products:
+            product['url']="http://www.globalspec.com/specsearch/partspecs?partId={0}&comp={1}&vid={2}&sqid=0".format(
+                product['partId'],
+                product['comp'],
+                product['vid']
+            )
+
+
     def get_products(self,json_contents):
+        catalog_url_format="http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
         #Gets the products from a category page or another catalog page
         html=json.loads(json_contents)["RESULTS"] #The contents are in the json element, inside some html tags
         soup = bs(html,"html.parser")
@@ -65,6 +89,7 @@ class Catalogs:
                     'harvested':False
                 }
                 ret.append(catalog_entry)
+        self.fix_url(ret)
         return ret
 
     def get_catalogs(self,json_contents):
@@ -84,6 +109,7 @@ class Catalogs:
                     'harvested':False
                 }
                 ret.append(catalog_entry)
+        self.fix_url(ret)
         return ret
 class Categories: 
     def getFromFormatA(self,content):
@@ -147,3 +173,18 @@ class Categories:
             cats=self.getFromFormatB(content)
             return cats
         raise(Exception("Unknown Categories Directory HTML Format"))
+
+    def fix(self,categories_items_list):
+        """
+        Fixes catalog urls to be in the correct format
+        "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
+
+        :param categories_items_list:
+        :return:
+        """
+        print(categories_items_list)
+        catalog_url_format = "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
+        catalogs=[entry for entry in categories_items_list if entry['product_page'] is None ]
+        for catalog in catalogs:
+            catalog['url']=catalog_url_format.format(catalog['category_id'])
+        print(categories_items_list)
