@@ -57,15 +57,15 @@ class Catalogs:
         :param catalog_and_product_list:
         :return:
         """
+        catalog_url_format = "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
+        product_url_format = "http://www.globalspec.com/specsearch/partspecs?partId={0}&comp={1}&vid={2}&sqid=0"
+
         catalogs=[entry for entry in catalog_and_product_list if 'partId' not in entry]
         products = [entry for entry in catalog_and_product_list if 'partId' in entry]
         for catalog in catalogs:
-            catalog['url']="http://www.globalspec.com/search/products?page=mi#sqid=0&comp={0}&vid={0}".format(
-                catalog['comp'],
-                catalog['vid']
-            )
+            catalog['url']=catalog_url_format.format( catalog['comp'] )
         for product in products:
-            product['url']="http://www.globalspec.com/specsearch/partspecs?partId={0}&comp={1}&vid={2}&sqid=0".format(
+            product['url']=product_url_format.format(
                 product['partId'],
                 product['comp'],
                 product['vid']

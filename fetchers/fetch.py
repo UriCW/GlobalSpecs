@@ -72,7 +72,7 @@ class DirectoryFetch(Fetch):
         pass
 
     #def pages_get(self, base_url, letter, start_page=1, end_page=999): #Production
-    def pages_get(self,base_url,letter,start_page=30,end_page=35):
+    def pages_get(self,base_url,letter,start_page=1,end_page=2):
         ret=[]
         for page in range(start_page,end_page):
             url=base_url+letter+"/"+str(page)
@@ -119,6 +119,14 @@ class FetchIndustrialCategory(DirectoryFetch):
         with open(industrial_directory_index_file,"r") as f:
             self.industrial_directories=json.load(f)
 
+    def uniqify_categories(categories):
+        new_categories=[]
+        for category in categories:
+            if category not in new_categories:
+                new_categories.append(category)
+        categories=new_categories
+        return  categories
+
     def fetch_categories(self):
         ret=[]
         for entry in self.industrial_directories:
@@ -140,6 +148,26 @@ class FetchCatalogs(Fetch):
         self.catalogs_index_file=catalogs_index_file
         with open(catalogs_index_file,"r") as f:
             self.catalogs=json.load(f)
+
+    def fetch_initial_list_of_catalogs(categories):
+        """
+        Generates initial lists for catalogs and products from categories
+
+        :param categories:
+        :return:
+        """
+        inital_catalog_category_entries=[entry for entry in categories if entry['product_page']==None] #We only care about catalogs
+        ret_catalogs=[]
+        ret_products = []
+        for category_entry in inital_catalog_category_entries:
+            #print(category_entry)
+
+            category_content=Fetch().http_get(category_entry['url'])
+            catalogs=Catalogs().get_catalogs(category_content)
+            products=Catalogs().get_products(category_content)
+            ret_catalogs.extend(catalogs)
+            ret_products.extend(products)
+        return ret_catalogs,ret_products
 
     def save(self,catalogs,products,errors):
         print("Saving")
@@ -280,72 +308,54 @@ if __name__=='__main__':
     """
 
     def traverse_catalogs(catalogs,products):
-        catalog_url_format = "http://www.globalspec.com/Search/GetProductResults?sqid=0&comp={0}&show=products&method=getNewResults"
+
         for catalog in catalogs:
             if catalog['harvested']==True: continue #Already harvested
 
             # Load catalog:
-            catalog_content = Fetch().http_get(catalog_url_format.format(catalog['category_id']))
+            catalog_content = Fetch().http_get(catalog['url'])
             cs = Catalogs().get_catalogs(catalog_content)
             ps = Catalogs().get_products(catalog_content)
-
             if len(cs) == 0: #No nested catalogs (only products)
                 print("catalog contains only products:"+str(catalog))
                 products.extend(ps)
                 catalog['harvested']=True
                 continue
 
-            #In case we are harvesting a record from category, we have urls with comp= instead of vid,cid,comp
-            if 'category_id' in catalog: #This is the initial categories
-                pass
-            else:#This is an entry with a vid,cid,comp
-                pass
-
-
-
-
-
-
             for c in cs:#Check this catalog (c) isn't already in catalogs[]
                 vid=c['vid']
                 comp=c['comp']
                 cid=c['cat_id']
-
-
-
                 print(">vid: " + vid + ">comp: " + comp + ">cid: " + cid)
-                #existing_records = [entry for entry in catalogs]
-                try:
-                    existing_records=[entry for entry in catalogs if entry['vid'] == vid and entry['cat_id']==cid and entry['comp']==comp]
-                    if len(existing_records)==0:#This record isn't already in catalogs[], add
-                        pass
-                except KeyError as ke:
-                    print("Key Error, catalog is just a category item")
-                    print(catalog)
-                    print(ke)
+                existing_records = [entry for entry in catalogs if
+                                    #entry['vid'] == vid and
+                                    #entry['cat_id'] == cid and
+                                    entry['comp'] == comp]
+                if len(existing_records) == 0:  # This record isn't already in catalogs[], add
+                    print("Adding catalog:"+str(c) )
+                    catalogs.append(c)
+                else:
+                    print( "Already have catalog"+str(c) )
+            for p in ps:#Check this product (p) isn't already in products[]
+                vid=p['vid']
+                comp=p['comp']
+                partId= p['partId']
+                existing_records = [entry for entry in products if
+                                    entry['vid'] == vid and
+                                    entry['comp'] == comp and
+                                    entry['partId'] == partId]
+                if len(existing_records)==0: # This record isn't already in products[], add
+                    print("Adding product:" + str(p))
+                    products.append(p)
+                else:
+                    print("Already indexed product: "+str(p))
+        catalog['harvested']=True
+        print("Catalog harvested:"+str(catalog))
 
-            print(cs)
 
 
-    def fetch_initial_list_of_catalogs(categories):
-        """
-        Generates initial lists for catalogs and products from categories
 
-        :param categories:
-        :return:
-        """
-        inital_catalog_category_entries=[entry for entry in categories if entry['product_page']==None] #We only care about catalogs
-        ret_catalogs=[]
-        ret_products = []
-        for category_entry in inital_catalog_category_entries:
-            print(category_entry)
 
-            category_content=Fetch().http_get(category_entry['url'])
-            catalogs=Catalogs().get_catalogs(category_content)
-            products=Catalogs().get_products(category_content)
-            ret_catalogs.extend(catalogs)
-            ret_products.extend(products)
-        return ret_catalogs,ret_products
 
 
     #Rewrite of the above catalogs fetching
@@ -353,25 +363,42 @@ if __name__=='__main__':
     #take all catalogs and traverse to find rest of catalogs
     #Build a final exhastive list of catalogs and of products
 
+
+
+    #"""
+    #Fetch initial lists
     print("Building initial lists for catalogs and products")
     initial_list_of_catalogs=None
     with open("../output/industrial_categories.json","r") as f:
         category_enteries=json.load(f)
     Categories().fix(category_enteries)
+    category_enteries=FetchIndustrialCategory.uniqify_categories(category_enteries)
     print("Category entries fixed:"+str(category_enteries) )
 
-    initial_list_of_catalogs,initial_list_of_products=fetch_initial_list_of_catalogs(category_enteries)
+    initial_list_of_catalogs,initial_list_of_products=FetchCatalogs.fetch_initial_list_of_catalogs(category_enteries)
 
     with open("../output/initial_list_of_catalogs.json","w+") as f:
         json.dump(initial_list_of_catalogs,f, sort_keys=True, indent=4)
     with open("../output/initial_list_of_products.json","w+") as f:
         json.dump(initial_list_of_products,f, sort_keys=True, indent=4)
 
+    #"""
+
+    #Loads catalogs and products from initial lists and traverse
+    catalogs=[]
+    products=[]
+    with open("../output/initial_list_of_catalogs.json", "r") as f:
+        catalogs=json.load(f)
+    with open("../output/initial_list_of_products.json", "r") as f:
+        products=json.load(f)
+
+    traverse_catalogs(catalogs,products)
+    with open("../output/list_of_catalogs.json","w+") as f:
+        json.dump(catalogs, f, sort_keys=True, indent=4)
+    with open("../output/list_of_products.json","w+") as f:
+        json.dump(products, f, sort_keys=True, indent=4)
 
 
-    print(initial_list_of_catalogs)
-    print("Initial Catalogs:"+str(initial_list_of_catalogs) )
-    print("Initial Products:" + str(initial_list_of_products) )
     #catalogs=[entry for entry in initial_list_of_catalogs if entry['product_page'] is None]
     #products=[entry for entry in initial_list_of_catalogs if entry['product_page'] is not None]
     #traverse_catalogs(catalogs,products)
