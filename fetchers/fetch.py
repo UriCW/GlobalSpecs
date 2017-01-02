@@ -330,6 +330,7 @@ if __name__=='__main__':
     def fetch_initial_list_of_catalogs(categories):
         """
         Generates initial lists for catalogs and products from categories
+
         :param categories:
         :return:
         """
@@ -351,6 +352,8 @@ if __name__=='__main__':
     #Take initial list of catalogs and products (from categories)
     #take all catalogs and traverse to find rest of catalogs
     #Build a final exhastive list of catalogs and of products
+
+    print("Building initial lists for catalogs and products")
     initial_list_of_catalogs=None
     with open("../output/industrial_categories.json","r") as f:
         category_enteries=json.load(f)
